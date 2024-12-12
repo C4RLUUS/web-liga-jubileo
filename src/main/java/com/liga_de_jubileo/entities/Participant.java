@@ -1,4 +1,4 @@
-package com.liga_de_jubileo.entity;
+package com.liga_de_jubileo.entities;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

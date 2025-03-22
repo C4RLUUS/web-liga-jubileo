@@ -20,30 +20,40 @@ public class AbstractConverter<T> {
 	    }*/
 
 	    // Convertir de una entidad a un DTO
-	    public <D, E> D convertToDTO(E entity, Class<D> dtoClass) {
+	    public <D> D convertToDTO(T entity, Class<D> dtoClass) {
 	        return objectMapper.convertValue(entity, dtoClass);
 	    }
 
 	    // Convertir de un DTO a una entidad
-	    public <E, D> E convertToEntity(D dto, Class<E> entityClass) {
+	    public <D> T convertToEntity(D dto, Class<T> entityClass) {
 	        return objectMapper.convertValue(dto, entityClass);
 	    }
 	    
 	 // Convertir una lista de entidades a una lista de DTOs
-	    public <D, E> List<D> convertToDTOList(List<E> entities, Class<D> dtoClass) {
+	    public <D> List<D> convertToDTOList(List<T> entities, Class<D> dtoClass) {
 	        return entities.stream()
 	                .map(entity -> convertToDTO(entity, dtoClass))
 	                .collect(Collectors.toList());
 	    }
 
 	    // Convertir una lista de DTOs a una lista de entidades
-	    public <E, D> List<E> convertToEntityList(List<D> dtos, Class<E> entityClass) {
+	    public <D> List<T> convertToEntityList(List<D> dtos, Class<T> entityClass) {
 	        return dtos.stream()
 	                .map(dto -> convertToEntity(dto, entityClass))
 	                .collect(Collectors.toList());
 	    }
 	    
-	    /* public <E,D> E updateEntity(D dto) {
-	    } */
+	    
+	    // Convertir de una externalDto a una Entidad
+	    public <E> T convertExternalDtoToEntity(E externalDto, Class<T> entityClass) {
+	        return objectMapper.convertValue(externalDto, entityClass);
+	    }
+	    
+	 // Convertir una lista de externalDtos a una lista de entidades
+	    public <E> List<T> convertExternalDTOToEnityList(List<E> externalDtosList, Class<T> entityList) {
+	        return externalDtosList.stream()
+	                .map(entity -> convertExternalDtoToEntity(externalDtosList, entityList))
+	                .collect(Collectors.toList());
+	    }
 
 }

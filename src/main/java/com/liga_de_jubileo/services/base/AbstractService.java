@@ -1,6 +1,5 @@
-package com.liga_de_jubileo.services;
+package com.liga_de_jubileo.services.base;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -11,7 +10,6 @@ import org.springframework.web.reactive.function.client.WebClient;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.liga_de_jubileo.converters.AbstractConverter;
 import com.liga_de_jubileo.repository.AbstractRepository;
-import com.liga_de_jubileo.services.base.BaseService;
 
 
 public class AbstractService<T, D, E> extends BaseService<T, D, E>{
@@ -19,10 +17,10 @@ public class AbstractService<T, D, E> extends BaseService<T, D, E>{
 	private AbstractRepository<T> repository;
 	
 	private AbstractConverter<T> converter;
+	
 
-
-	public AbstractService(AbstractRepository<T> repository, AbstractConverter<T> converter) {
-		super(WebClient.builder(), new ObjectMapper());
+	public AbstractService(WebClient.Builder webClientBuilder, AbstractRepository<T> repository, AbstractConverter<T> converter) {
+		super(webClientBuilder , new ObjectMapper());
 		this.repository = repository;
 		this.converter = converter; 
 	}
@@ -33,7 +31,13 @@ public class AbstractService<T, D, E> extends BaseService<T, D, E>{
 	}
 	
 	public D findById(Long id) {
-		return this.converter.convertToDTO(this.repository.findById(id), this.getDClass()); 
+		T entity = this.repository.findById(id).orElseGet(null); 
+		if(entity != null) {
+			
+			return this.converter.convertToDTO(entity, this.getDClass()); 
+		}else {
+			throw new RuntimeException("La entidad que quieres convertir no existe"); 
+		}
 	}
 	
 	public D create(D dto) {
@@ -51,8 +55,10 @@ public class AbstractService<T, D, E> extends BaseService<T, D, E>{
     		Map<String, String> params, E body){
     	
     	try {
-    		E externalResponse = super.fetchData(urlBase, endpoint, method, headers, params, body, new ParameterizedTypeReference<E>() {}); 
-    		return new ArrayList<D>(); 
+    		List<E> externalResponse = super.fetchData(urlBase, endpoint, method, headers, params, body, new ParameterizedTypeReference<List<E>>() {});
+    		List<T> enititiesList = this.converter.convertExternalDTOToEnityList(externalResponse, getTClass()); 
+    		
+    		return this.converter.convertToDTOList(enititiesList, getDClass()); 
     		
     	}catch (Exception e) {
 			// TODO: handle exception

@@ -9,7 +9,7 @@ import org.springframework.validation.BindingResult;
 public class AbstractRestController {
 
 	protected <T> ResponseEntity<?> handleRequest(Callable<T> serviceCall, BindingResult bindingResult) {
-        if (bindingResult.hasErrors()) {
+        if (bindingResult != null && bindingResult.hasErrors()) {
             String errorMessage = bindingResult.getFieldErrors()
                     .stream()
                     .map(fieldError -> fieldError.getField() + ": " + fieldError.getDefaultMessage())

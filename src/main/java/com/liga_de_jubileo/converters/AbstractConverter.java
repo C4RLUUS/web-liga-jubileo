@@ -6,13 +6,15 @@ import java.util.stream.Collectors;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @Component
-public class AbstractConverter<T> {
+public abstract class AbstractConverter<T, D, E> {
 	
 		@Autowired
-	    private ObjectMapper objectMapper;
+	    public ObjectMapper objectMapper;
 
 	    // Inyectar el ObjectMapper configurado
 	    /*public AbstractConverter(ObjectMapper objectMapper) {
@@ -20,24 +22,25 @@ public class AbstractConverter<T> {
 	    }*/
 
 	    // Convertir de una entidad a un DTO
-	    public <D> D convertToDTO(T entity, Class<D> dtoClass) {
+	    public D convertToDTO(T entity, Class<D> dtoClass) {
 	        return objectMapper.convertValue(entity, dtoClass);
 	    }
 
 	    // Convertir de un DTO a una entidad
-	    public <D> T convertToEntity(D dto, Class<T> entityClass) {
+	    public T convertToEntity(D dto, Class<T> entityClass) {
 	        return objectMapper.convertValue(dto, entityClass);
 	    }
 	    
 	 // Convertir una lista de entidades a una lista de DTOs
-	    public <D> List<D> convertToDTOList(List<T> entities, Class<D> dtoClass) {
-	        return entities.stream()
+	    public List<D> convertToDTOList(List<T> entities, Class<D> dtoClass) {
+	    	List<D> list =  entities.stream()
 	                .map(entity -> convertToDTO(entity, dtoClass))
 	                .collect(Collectors.toList());
+	    	return list; 
 	    }
 
 	    // Convertir una lista de DTOs a una lista de entidades
-	    public <D> List<T> convertToEntityList(List<D> dtos, Class<T> entityClass) {
+	    public List<T> convertToEntityList(List<D> dtos, Class<T> entityClass) {
 	        return dtos.stream()
 	                .map(dto -> convertToEntity(dto, entityClass))
 	                .collect(Collectors.toList());
@@ -45,15 +48,20 @@ public class AbstractConverter<T> {
 	    
 	    
 	    // Convertir de una externalDto a una Entidad
-	    public <E> T convertExternalDtoToEntity(E externalDto, Class<T> entityClass) {
+	    public T convertExternalDtoToEntity(E externalDto, Class<T> entityClass) {
 	        return objectMapper.convertValue(externalDto, entityClass);
 	    }
 	    
 	 // Convertir una lista de externalDtos a una lista de entidades
-	    public <E> List<T> convertExternalDTOToEnityList(List<E> externalDtosList, Class<T> entityList) {
-	        return externalDtosList.stream()
-	                .map(entity -> convertExternalDtoToEntity(externalDtosList, entityList))
+	    public List<T> convertExternalDTOToEnityList(List<E> externalDtosList, Class<T> entityList) {
+	    	List<T> list = externalDtosList.stream()
+	                .map(externalDto -> convertExternalDtoToEntity(externalDto, entityList))
 	                .collect(Collectors.toList());
+	    	return list; 
+	    }
+	    
+	    public List<E> convertJsonStringToExternalResponseObj(String json, Class<E> externalClass) throws JsonMappingException, JsonProcessingException{
+	    	return objectMapper.readValue(json, objectMapper.getTypeFactory().constructCollectionType(List.class,externalClass)); 
 	    }
 
 }

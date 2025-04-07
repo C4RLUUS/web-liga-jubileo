@@ -1,9 +1,10 @@
 package com.liga_de_jubileo.services.base;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
-import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpMethod;
 import org.springframework.web.reactive.function.client.WebClient;
 
@@ -16,10 +17,13 @@ public class AbstractService<T, D, E> extends BaseService<T, D, E>{
 
 	private AbstractRepository<T> repository;
 	
-	private AbstractConverter<T> converter;
+	private AbstractConverter<T, D, E> converter;
+	
+	private final AtomicReference<String> token = new AtomicReference<>();
+	private final AtomicReference<Instant> tokenExpiry = new AtomicReference<>();
 	
 
-	public AbstractService(WebClient.Builder webClientBuilder, AbstractRepository<T> repository, AbstractConverter<T> converter) {
+	public AbstractService(WebClient.Builder webClientBuilder, AbstractRepository<T> repository, AbstractConverter<T, D, E> converter) {
 		super(webClientBuilder , new ObjectMapper());
 		this.repository = repository;
 		this.converter = converter; 
@@ -52,10 +56,11 @@ public class AbstractService<T, D, E> extends BaseService<T, D, E>{
      */
                 
     protected List<D> fetchData(String urlBase, String endpoint, HttpMethod method, Map<String, String> headers,  
-    		Map<String, String> params, E body){
+    		Map<String, String> params, E body) throws Exception{
     	
     	try {
-    		List<E> externalResponse = super.fetchData(urlBase, endpoint, method, headers, params, body, new ParameterizedTypeReference<List<E>>() {});
+    		String json = super.performRequest(urlBase, endpoint, method, headers, params, body); 
+    		List<E> externalResponse = this.converter.convertJsonStringToExternalResponseObj(json, getEClass());  
     		List<T> enititiesList = this.converter.convertExternalDTOToEnityList(externalResponse, getTClass()); 
     		
     		return this.converter.convertToDTOList(enititiesList, getDClass()); 
@@ -67,13 +72,5 @@ public class AbstractService<T, D, E> extends BaseService<T, D, E>{
     	
     	
     }
-	
-	
-	
-	
-	
-	/*protected D updateEntity() {
-		T ent
-	}*/
-	
+    
 }

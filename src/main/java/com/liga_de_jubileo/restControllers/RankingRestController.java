@@ -5,23 +5,22 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.liga_de_jubileo.services.ParticipantService;
+import com.liga_de_jubileo.services.RankingService;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Participant Endpoints")
+@Tag(name = "Ranking Endpoints")
 @RestController
-@RequestMapping("/api/participants")
-public class ParticipantRestController extends AbstractRestController{
-	
-	private ParticipantService service; 
+@RequestMapping("/api/ranking")
+public class RankingRestController extends AbstractRestController{
 
-	public ParticipantRestController(ParticipantService service) {
+	private RankingService service;
+
+	public RankingRestController(RankingService service) {
 		super();
 		this.service = service;
-	}
-
-
+	} 
+	
 	@GetMapping
 	private ResponseEntity<?> getAll(){
 		return handleRequest(() -> this.service.findAll(), null); 
